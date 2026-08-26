@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,6 +31,7 @@ export class User {
   @Column({ unique: true, length: 255 })
   email!: string;
 
+  @Exclude()
   @Column({ length: 255 })
   password!: string;
 
@@ -42,6 +44,27 @@ export class User {
 
   @Column({ default: true })
   isActive!: boolean;
+
+  @Column({ default: false })
+  isVerified!: boolean;
+
+  @Exclude()
+  @Column({ type: 'text', nullable: true })
+  verificationToken?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verificationTokenExpiresAt?: Date | null;
+
+  @Exclude()
+  @Column({ type: 'text', nullable: true })
+  resetToken?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetTokenExpiresAt?: Date | null;
+
+  @Exclude()
+  @Column({ type: 'text', nullable: true })
+  refreshTokenHash?: string | null;
 
   @OneToMany(() => Course, (course) => course.createdBy)
   courses!: Course[];

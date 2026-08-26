@@ -32,6 +32,9 @@ export class Lesson {
   @Column({ type: 'varchar', length: 500, nullable: true })
   thumbnail!: string | null;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  videoUrl!: string | null;
+
   @Column({ type: 'int', default: 0 })
   duration!: number;
 

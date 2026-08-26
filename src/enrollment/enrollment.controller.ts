@@ -1,34 +1,90 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
+
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { User } from 'src/user/entities/user.entity';
+
 import { EnrollmentService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { UpdateEnrollmentStatusDto } from './dto/update-enrollment.dto';
 
-@Controller('enrollment')
+@Controller('enrollments')
 export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
   @Post()
-  create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
-    return this.enrollmentService.create(createEnrollmentDto);
+  async create(@CurrentUser() user: User, @Body() dto: CreateEnrollmentDto) {
+    return this.enrollmentService.create(user.id, dto);
   }
 
-  @Get()
-  findAll() {
-    return this.enrollmentService.findAll();
+  @Get('my')
+  async findMyEnrollments(
+    @CurrentUser() user: User,
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
+  ) {
+    return this.enrollmentService.findMyEnrollments(user.id, page, limit);
+  }
+
+  @Get('course/:courseId')
+  async findByUserAndCourse(
+    @CurrentUser() user: User,
+    @Param('courseId') courseId: string,
+  ) {
+    return this.enrollmentService.findByUserAndCourse(user.id, courseId);
+  }
+
+  @Get('course/:courseId/check')
+  async checkEnrollment(
+    @CurrentUser() user: User,
+    @Param('courseId') courseId: string,
+  ) {
+    const enrolled = await this.enrollmentService.isEnrolled(user.id, courseId);
+
+    return {
+      enrolled,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.enrollmentService.findOne(+id);
+  async findById(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.enrollmentService.findById(id, user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEnrollmentDto: UpdateEnrollmentDto) {
-    return this.enrollmentService.update(+id, updateEnrollmentDto);
+  @Patch(':id/status')
+  async updateStatus(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() dto: UpdateEnrollmentStatusDto,
+  ) {
+    return this.enrollmentService.updateStatus(id, user.id, dto);
+  }
+
+  @Patch(':id/complete')
+  async complete(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.enrollmentService.complete(id, user.id);
+  }
+
+  @Patch(':id/cancel')
+  async cancel(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.enrollmentService.cancel(id, user.id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.enrollmentService.remove(+id);
+  async remove(@CurrentUser() user: User, @Param('id') id: string) {
+    await this.enrollmentService.remove(id, user.id);
+
+    return {
+      message: 'Enrollment deleted successfully',
+    };
   }
 }

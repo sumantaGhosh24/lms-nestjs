@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateEnrollmentDto } from './create-enrollment.dto';
+import { IsEnum } from 'class-validator';
 
-export class UpdateEnrollmentDto extends PartialType(CreateEnrollmentDto) {}
+import { EnrollmentStatus } from '../entities/enrollment.entity';
+
+export class UpdateEnrollmentStatusDto {
+  @IsEnum(EnrollmentStatus)
+  status!: EnrollmentStatus;
+}
