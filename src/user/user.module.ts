@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { DatabaseModule } from 'src/database';
@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { Course } from '../course/entities/course.entity';
 import { Enrollment } from '../enrollment/entities/enrollment.entity';
 
+@Global()
 @Module({
   imports: [
     DatabaseModule,
